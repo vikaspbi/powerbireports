@@ -42,6 +42,37 @@ header {
 
 h1 { margin: 0; font-size: 20px; }
 
+.linkedin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+    text-decoration: none;
+
+    /* Gradient background */
+    background: linear-gradient(135deg, #0077b5, #00a0dc);
+
+    /* Glow effect */
+    box-shadow: 0 4px 15px rgba(0, 119, 181, 0.4);
+
+    transition: all 0.3s ease;
+}
+
+/* Hover Effect */
+.linkedin-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 119, 181, 0.7);
+}
+
+/* Click effect */
+.linkedin-btn:active {
+    transform: scale(0.95);
+}
+    
 /* CONTAINER */
 .container {
     padding: 30px 40px;
@@ -223,7 +254,20 @@ input, select {
 
 <header>
     <h1>Vikas Kumar Paswan | Projects</h1>
-    <a href="https://www.linkedin.com/in/vikaskumar1802/" style="color:#38bdf8;">LinkedIn</a>
+    <a href="https://www.linkedin.com/in/vikaskumar1802/" target="_blank" class="linkedin-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="white" viewBox="0 0 24 24">
+        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 
+        2.761 2.239 5 5 5h14c2.761 0 5-2.239 
+        5-5v-14c0-2.761-2.239-5-5-5zm-11 
+        19h-3v-10h3v10zm-1.5-11.268c-.966 
+        0-1.75-.784-1.75-1.75s.784-1.75 
+        1.75-1.75 1.75.784 1.75 1.75-.784 
+        1.75-1.75 1.75zm13.5 
+        11.268h-3v-5.604c0-1.337-.027-3.058-1.865-3.058-1.865 
+        0-2.151 1.455-2.151 2.959v5.703h-3v-10h2.881v1.367h.041c.401-.759 
+        1.379-1.558 2.838-1.558 3.036 0 3.6 2 3.6 4.59v5.601z"/>
+    </svg>
+</a>
 </header>
 
 <div class="container">
