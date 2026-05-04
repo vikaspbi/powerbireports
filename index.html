@@ -233,26 +233,37 @@ const projects = [
         live: "https://app.powerbi.com/view?r=YOUR_LINK", 
         download: "assets/files/sales-dashboard.pbix", 
         short: "Analyzed sales trends to identify revenue leakage and growth opportunities.", 
-        details: 
-        <h2>Sales Performance Dashboard</h2> 
-        <hr> 
-        <h3><u>Business Problem</u></h3> 
-        <p>Sales leadership lacked visibility into declining revenue trends across regions.</p> 
-        <h3><u>Objective</u></h3> 
-        <p>Enable real-time tracking of sales KPIs and identify underperforming segments.</p> 
-        <h3><u>Dataset</u></h3> 
-        <p>Transactional sales data (2M+ rows) from ERP system.</p> 
-        <h3><u>Data Transformation</u></h3> 
-        <p>Handled missing values, created date hierarchy, normalized product categories.</p> 
-        <h3><u>Data Model</u></h3> <p>Star schema with fact_sales and dimension tables.</p> 
-        <h3><u>DAX</u></h3> <p>Total Revenue, YoY Growth %, Profit Margin.</p> 
-        <h3><u>Insights</u></h3> 
-        <ul> 
-            <li>15% revenue drop in South region</li> 
-            <li>Top 10 products contribute 60% revenue</li> 
-        </ul> 
-        <h3><u>Impact</u></h3> 
-        <p>Helped leadership optimize pricing strategy and improve revenue by 8%.</p> 
+        details: `
+        <h2>Sales Performance Dashboard</h2>
+        <hr>
+        
+        <h3><u>Business Problem</u></h3>
+        <p>Sales leadership lacked visibility into declining revenue trends across regions.</p>
+        
+        <h3><u>Objective</u></h3>
+        <p>Enable real-time tracking of sales KPIs and identify underperforming segments.</p>
+        
+        <h3><u>Dataset</u></h3>
+        <p>Transactional sales data (2M+ rows) from ERP system.</p>
+        
+        <h3><u>Data Transformation</u></h3>
+        <p>Handled missing values, created date hierarchy, normalized product categories.</p>
+        
+        <h3><u>Data Model</u></h3>
+        <p>Star schema with fact_sales and dimension tables.</p>
+        
+        <h3><u>DAX</u></h3>
+        <p>Total Revenue, YoY Growth %, Profit Margin.</p>
+        
+        <h3><u>Insights</u></h3>
+        <ul>
+            <li>15% revenue drop in South region</li>
+            <li>Top 10 products contribute 60% revenue</li>
+        </ul>
+        
+        <h3><u>Impact</u></h3>
+        <p>Helped leadership optimize pricing strategy and improve revenue by 8%.</p>
+        `
 }, 
 { 
         title: "Financial KPI Dashboard", 
