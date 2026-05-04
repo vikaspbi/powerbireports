@@ -34,14 +34,14 @@ With 5+ years of experience in analytics, I specialize in building end-to-end BI
 | Sales Analytics Dashboard | Retail | Improved revenue visibility across regions |
 | Customer Segmentation | Marketing | Enabled targeted campaigns using RFM analysis |
 
-Explore all projects: [Portfolio Website](https://vikaspbi.github.io/powerbireports/)
+Explore all projects: [Projects Website](https://vikaspbi.github.io/powerbireports/)
 
 ---
 
 ## Let's Connect
 
 - LinkedIn: https://www.linkedin.com/in/vikaskumar1802/
-- Portfolio: https://vikaspbi.github.io/powerbireports/
+- Portfolio: https://vikaspaswan.in/
 
 ---
 
