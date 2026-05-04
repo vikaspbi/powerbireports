@@ -3,7 +3,7 @@
 
 I transform raw data into actionable insights that drive business decisions.
 
-With 5+ years of experience in analytics, I specialize in building end-to-end BI solutions — from data extraction and transformation to data modeling and executive dashboards.
+With 4+ years of experience in analytics, I specialize in building end-to-end BI solutions — from data extraction and transformation to data modeling and executive dashboards.
 
 ---
 
