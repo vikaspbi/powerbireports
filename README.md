@@ -42,6 +42,8 @@ Explore all projects: [Projects Website](https://vikaspbi.github.io/powerbirepor
 
 - LinkedIn: https://www.linkedin.com/in/vikaskumar1802/
 - Portfolio: https://vikaspaswan.in/
+- Contact no. : 9009759975, 8319960458
+- Email: hello@vikaspaswan.in
 
 ---
 
