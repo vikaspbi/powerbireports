@@ -160,6 +160,8 @@ const projects = [
     domain: "Sales",
     tools: "Power BI, SQL",
     image: "images/deng-xiang--WXQm_NTK0U-unsplash.jpg",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
     short: "Analyzed sales trends to identify revenue leakage and growth opportunities.",
     details: `
     <h2>Sales Performance Dashboard</h2>
@@ -197,6 +199,8 @@ const projects = [
     domain: "Finance",
     tools: "Power BI, Excel",
     image: "images/riswan-ratta-mlnAX_7Cuv0-unsplash.png",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
     short: "Tracked financial health and cost optimization metrics.",
     details: "<h2>Finance Project Details Coming Soon</h2>"
 },
@@ -205,6 +209,8 @@ const projects = [
     domain: "Finance",
     tools: "Power BI, Excel",
     image: "images/riswan-ratta-mlnAX_7Cuv0-unsplash.png",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
     short: "Tracked financial health and cost optimization metrics.",
     details: "<h2>Finance Project Details Coming Soon</h2>"
 },
@@ -213,6 +219,8 @@ const projects = [
     domain: "Finance",
     tools: "Power BI, Excel",
     image: "images/riswan-ratta-mlnAX_7Cuv0-unsplash.png",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
     short: "Tracked financial health and cost optimization metrics.",
     details: "<h2>Finance Project Details Coming Soon</h2>"
 },
@@ -221,6 +229,8 @@ const projects = [
     domain: "Finance",
     tools: "Power BI, Excel",
     image: "images/riswan-ratta-mlnAX_7Cuv0-unsplash.png",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
     short: "Tracked financial health and cost optimization metrics.",
     details: "<h2>Finance Project Details Coming Soon</h2>"
 },
@@ -229,6 +239,28 @@ const projects = [
     domain: "Finance",
     tools: "Power BI, Excel",
     image: "images/riswan-ratta-mlnAX_7Cuv0-unsplash.png",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
+    short: "Tracked financial health and cost optimization metrics.",
+    details: "<h2>Finance Project Details Coming Soon</h2>"
+},
+{
+    title: "Financial KPI Dashboard",
+    domain: "Finance",
+    tools: "Power BI, Excel",
+    image: "images/riswan-ratta-mlnAX_7Cuv0-unsplash.png",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
+    short: "Tracked financial health and cost optimization metrics.",
+    details: "<h2>Finance Project Details Coming Soon</h2>"
+},
+{
+    title: "Financial KPI Dashboard",
+    domain: "Finance",
+    tools: "Power BI, Excel",
+    image: "images/riswan-ratta-mlnAX_7Cuv0-unsplash.png",
+    live: "https://app.powerbi.com/view?r=YOUR_LINK",
+    download: "assets/files/sales-dashboard.pbix",
     short: "Tracked financial health and cost optimization metrics.",
     details: "<h2>Finance Project Details Coming Soon</h2>"
 }
@@ -250,10 +282,21 @@ function renderProjects() {
         grid.innerHTML += `
         <div class="card">
             <img src="${p.image}">
+            
             <h3>${p.title}</h3>
             <p>${p.short}</p>
-            <small>${p.tools}</small><br>
-            <button onclick="openModal('${p.title}')">View Project Details</button>
+            <small>${p.tools}</small>
+        
+            <div class="card-footer">
+                <button onclick="openModal('${p.title}')">
+                    View Details
+                </button>
+        
+                <div class="right-buttons">
+                    <a href="${p.live}" target="_blank" class="icon-btn">🔗</a>
+                    <a href="${p.download}" download class="icon-btn">⬇</a>
+                </div>
+            </div>
         </div>
         `;
     });
