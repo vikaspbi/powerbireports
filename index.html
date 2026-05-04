@@ -1,104 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Power BI Portfolio</title>
-
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background-color: #f5f5f5;
-    }
-
-    .container {
-      padding: 20px;
-    }
-
-    .card {
-      background: white;
-      padding: 20px;
-      margin: 20px auto;
-      width: 300px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.8);
-    }
-
-    .modal-content {
-      position: relative;
-      margin: 5% auto;
-      width: 80%;
-      height: 80%;
-      background: white;
-      padding: 10px;
-    }
-
-    iframe {
-      width: 100%;
-      height: 90%;
-      border: none;
-    }
-
-    .close {
-      position: absolute;
-      top: 10px;
-      right: 20px;
-      font-size: 25px;
-      cursor: pointer;
-    }
-  </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Your Name] | Senior Data Analyst Portfolio</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <!-- Inter Font for a modern, tech look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
-<div class="container">
-  <h1>Welcome to My Power BI Portfolio</h1>
-  <p>Hi, I'm Vikas. I build data-driven dashboards using Power BI.</p>
+    <!-- Header / Nav -->
+    <header>
+        <nav class="container">
+            <div class="logo">[YOUR NAME] <span class="title">| Data Analytics</span></div>
+            <ul class="nav-links">
+                <li><a href="#portfolio">Portfolio</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="assets/docs/your-resume.pdf" class="btn-small" target="_blank">Resume</a></li>
+            </ul>
+        </nav>
+    </header>
 
-  <!-- Project Card -->
-  <div class="card" onclick="openModal()">
-    <h3>Supplier Performance Dashboard</h3>
-    <p>Click to view interactive report</p>
-  </div>
-</div>
+    <!-- Hero / Featured Project Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <div class="hero-text">
+                <span class="tag-featured">Featured Project</span>
+                <h1>Supply Chain Control Tower: Optimizing Inventory & Reducing Stockouts</h1>
+                <p>Developing an end-to-end Power BI solution integrated with SQL Server to provide visibility into $15M of inventory, reducing stockout events by 22% QoQ.</p>
+                <div class="hero-tools">
+                    <span>Power BI</span><span>SQL Server</span><span>Azure Data Factory</span>
+                </div>
+                <a href="projects/supply-chain-performance.html" class="btn-primary">View Full Case Study</a>
+            </div>
+            <div class="hero-mockup">
+                <img src="assets/images/project1-thumb.png" alt="Featured Dashboard Mockup">
+            </div>
+        </div>
+    </section>
 
-<!-- Modal -->
-<div id="reportModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal()">&times;</span>
+    <!-- Portfolio Catalogue Section -->
+    <section id="portfolio" class="portfolio container">
+        <h2>Project Catalogue</h2>
+        
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <label>Domain:</label>
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="sales">Sales</button>
+                <button class="filter-btn" data-filter="finance">Finance</button>
+                <button class="filter-btn" data-filter="ops">Operations</button>
+            </div>
+            <div class="filter-group">
+                <label>Tool:</label>
+                <button class="filter-btn" data-filter="pbi">Power BI</button>
+                <button class="filter-btn" data-filter="sql">SQL</button>
+                <button class="filter-btn" data-filter="python">Python</button>
+            </div>
+        </div>
 
-<iframe title="Healthcare_Analytics_Data" width="1140" height="541.25" 
-  src="https://app.powerbi.com/reportEmbed?reportId=28de41d8-d51a-40f9-b0d8-ea6b23d65219&autoAuth=true&ctid=0ae51e19-07c8-4e4b-bb6d-648ee58410f4" 
-  frameborder="0" allowFullScreen="true">
-</iframe>
-  </div>
-</div>
+        <!-- Grid Layout -->
+        <div class="project-grid" id="project-grid">
+            
+            <!-- SAMPLE PROJECT CARD 1 -->
+            <div class="project-card sales pbi sql">
+                <div class="card-image">
+                    <img src="assets/images/project2-thumb.png" alt="Executive Sales Dashboard">
+                </div>
+                <div class="card-content">
+                    <h3>Global Sales Executive Overview</h3>
+                    <p>Transformed fragmented Excel reporting into a dynamic Power BI suite, enabling regional VPs to identify $2M in revenue leakages.</p>
+                    <div class="card-tools">
+                        <span>Power BI</span><span>SQL</span><span>DAX</span>
+                    </div>
+                    <a href="projects/executive-sales.html" class="view-link">View Case Study →</a>
+                </div>
+            </div>
 
-<script>
-function openModal() {
-  document.getElementById("reportModal").style.display = "block";
-}
+            <!-- SAMPLE PROJECT CARD 2 -->
+            <div class="project-card finance pbi python">
+                <div class="card-image">
+                    <img src="assets/images/project3-thumb.png" alt="FP&A Variance Analysis">
+                </div>
+                <div class="card-content">
+                    <h3>FP&A Monthly Variance Analysis</h3>
+                    <p>Automated actuals vs. budget variance reporting using Python for ETL and Power BI for visualization, saving 20h/month of manual effort.</p>
+                    <div class="card-tools">
+                        <span>Python (Pandas)</span><span>Power BI</span>
+                    </div>
+                    <a href="#" class="view-link">View Case Study →</a>
+                </div>
+            </div>
 
-function closeModal() {
-  document.getElementById("reportModal").style.display = "none";
-}
-</script>
+            <!-- SAMPLE PROJECT CARD 3 -->
+            <div class="project-card ops sql">
+                <div class="card-image">
+                    <img src="assets/images/project4-thumb.png" alt="Customer Churn Prediction SQL">
+                </div>
+                <div class="card-content">
+                    <h3>Advanced SQL: Customer Churn Cohort Analysis</h3>
+                    <p>Developed complex SQL scripts using CTEs and window functions to segment customers and identify high-churn risk cohorts.</p>
+                    <div class="card-tools">
+                        <span>T-SQL</span><span>Window Functions</span>
+                    </div>
+                    <a href="#" class="view-link">View Case Study →</a>
+                </div>
+            </div>
 
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="container">
+        <p>&copy; 2023 [Your Name]. All rights reserved.</p>
+        <div class="social-links">
+            <a href="your-linkedin-url" target="_blank">LinkedIn</a>
+            <a href="your-github-url" target="_blank">GitHub</a>
+        </div>
+    </footer>
+
+    <script src="assets/js/script.js"></script>
 </body>
 </html>
