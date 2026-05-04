@@ -75,11 +75,6 @@ input, select {
     margin-top: 15px;
 }
 
-.right-buttons {
-    display: flex;
-    gap: 10px;
-}
-
 .card:hover {
     transform: translateY(-5px);
     background: #334155;
@@ -93,23 +88,34 @@ input, select {
     border-radius: 6px;
 }
     
-.icon-btn {
+.action-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
+    gap: 6px;
+    padding: 8px 12px;
     background: #1e40af;
     color: white;
     border-radius: 8px;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 13px;
     transition: 0.3s;
 }
 
-.icon-btn:hover {
+.action-btn:hover {
     background: #2563eb;
-    transform: scale(1.1);
+}
+
+.action-btn.secondary {
+    background: #334155;
+}
+
+.action-btn.secondary:hover {
+    background: #475569;
+}
+
+.right-buttons {
+    display: flex;
+    gap: 10px;
 }
     
 button {
@@ -324,8 +330,8 @@ function renderProjects() {
                 </button>
         
                 <div class="right-buttons">
-                    <a href="${p.live}" target="_blank" class="icon-btn">🔗</a>
-                    <a href="${p.download}" download class="icon-btn">⬇</a>
+                        <a href="${p.live}" target="_blank" class="action-btn">🔗<span>View Dashboard</span></a>
+                        <a href="${p.download}" download class="action-btn secondary">⬇<span>Get .pbix file</span></a>
                 </div>
             </div>
         </div>
