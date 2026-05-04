@@ -66,6 +66,10 @@ input, select {
     padding: 15px;
     border-radius: 10px;
     transition: 0.3s;
+
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .card-footer {
@@ -87,7 +91,16 @@ input, select {
     object-fit: cover;
     border-radius: 6px;
 }
-    
+.card-body {
+    flex-grow: 1;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
 .action-btn {
     display: flex;
     align-items: center;
@@ -316,26 +329,33 @@ function renderProjects() {
         (domain === "" || p.domain === domain)
     )
     .forEach(p => {
-        grid.innerHTML += `
-        <div class="card">
-            <img src="${p.image}">
+            grid.innerHTML += `
+            <div class="card">
+                <img src="${p.image}">
+                
+                <div class="card-body">
+                    <h3>${p.title}</h3>
+                    <p>${p.short}</p>
+                    <small>${p.tools}</small>
+                </div>
             
-            <h3>${p.title}</h3>
-            <p>${p.short}</p>
-            <small>${p.tools}</small>
-        
-            <div class="card-footer">
-                <button onclick="openModal('${p.title}')">
-                    View Details
-                </button>
-        
-                <div class="right-buttons">
-                        <a href="${p.live}" target="_blank" class="action-btn">🔗<span>View Dashboard</span></a>
-                        <a href="${p.download}" download class="action-btn secondary">⬇<span>Get .pbix file</span></a>
+                <div class="card-footer">
+                    <button onclick="openModal('${p.title}')">
+                        View Details
+                    </button>
+            
+                    <div class="right-buttons">
+                        <a href="${p.live}" target="_blank" class="action-btn">
+                            🔗 <span>View Dashboard</span>
+                        </a>
+            
+                        <a href="${p.download}" download class="action-btn secondary">
+                            ⬇ <span>Get .pbix file</span>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
-        `;
+            `;
     });
 }
 
