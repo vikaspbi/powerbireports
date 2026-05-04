@@ -1,126 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[Your Name] | Senior Data Analyst Portfolio</title>
-    <link rel="stylesheet" href="assets/css/styles.css">
-    <!-- Inter Font for a modern, tech look -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vikas | Data Analytics Portfolio</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+header {
+    padding: 20px 40px;
+    background: #020617;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 { margin: 0; font-size: 22px; }
+
+.container {
+    padding: 30px 40px;
+}
+
+.filters {
+    margin-bottom: 20px;
+}
+
+input, select {
+    padding: 10px;
+    margin-right: 10px;
+    border-radius: 6px;
+    border: none;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    background: #334155;
+}
+
+.card img {
+    width: 100%;
+    border-radius: 6px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    border: none;
+    background: #2563eb;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: #0f172a;
+    margin: 50px auto;
+    padding: 30px;
+    width: 80%;
+    border-radius: 10px;
+}
+
+.close {
+    float: right;
+    cursor: pointer;
+    font-size: 20px;
+}
+</style>
 </head>
+
 <body>
 
-    <!-- Header / Nav -->
-    <header>
-        <nav class="container">
-            <div class="logo">[YOUR NAME] <span class="title">| Data Analytics</span></div>
-            <ul class="nav-links">
-                <li><a href="#portfolio">Portfolio</a></li>
-                <li><a href="#about">About</a></li>
-                <li><a href="assets/docs/your-resume.pdf" class="btn-small" target="_blank">Resume</a></li>
-            </ul>
-        </nav>
-    </header>
+<header>
+    <h1>📊 Vikas | Analytics Portfolio</h1>
+    <div>
+        <a href="#" style="color:white;">LinkedIn</a>
+    </div>
+</header>
 
-    <!-- Hero / Featured Project Section -->
-    <section class="hero">
-        <div class="container hero-content">
-            <div class="hero-text">
-                <span class="tag-featured">Featured Project</span>
-                <h1>Supply Chain Control Tower: Optimizing Inventory & Reducing Stockouts</h1>
-                <p>Developing an end-to-end Power BI solution integrated with SQL Server to provide visibility into $15M of inventory, reducing stockout events by 22% QoQ.</p>
-                <div class="hero-tools">
-                    <span>Power BI</span><span>SQL Server</span><span>Azure Data Factory</span>
-                </div>
-                <a href="projects/supply-chain-performance.html" class="btn-primary">View Full Case Study</a>
-            </div>
-            <div class="hero-mockup">
-                <img src="assets/images/project1-thumb.png" alt="Featured Dashboard Mockup">
-            </div>
+<div class="container">
+
+    <!-- Filters -->
+    <div class="filters">
+        <input type="text" id="search" placeholder="Search projects...">
+        <select id="domainFilter">
+            <option value="">All Domains</option>
+            <option value="Sales">Sales</option>
+            <option value="Finance">Finance</option>
+        </select>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid" id="projectGrid"></div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+    <div class="modal-content" id="modalContent">
+        <span class="close" onclick="closeModal()">✖</span>
+        <div id="projectDetails"></div>
+    </div>
+</div>
+
+<script>
+
+const projects = [
+{
+    title: "Sales Performance Dashboard",
+    domain: "Sales",
+    tools: "Power BI, SQL",
+    image: "https://via.placeholder.com/400x200",
+    short: "Analyzed sales trends to identify revenue leakage and growth opportunities.",
+    details: `
+    <h2>Sales Performance Dashboard</h2>
+
+    <h3>Business Problem</h3>
+    <p>Sales leadership lacked visibility into declining revenue trends across regions.</p>
+
+    <h3>Objective</h3>
+    <p>Enable real-time tracking of sales KPIs and identify underperforming segments.</p>
+
+    <h3>Dataset</h3>
+    <p>Transactional sales data (2M+ rows) from ERP system.</p>
+
+    <h3>Data Transformation</h3>
+    <p>Handled missing values, created date hierarchy, normalized product categories.</p>
+
+    <h3>Data Model</h3>
+    <p>Star schema with fact_sales and dimension tables.</p>
+
+    <h3>DAX</h3>
+    <p>Total Revenue, YoY Growth %, Profit Margin.</p>
+
+    <h3>Insights</h3>
+    <ul>
+        <li>15% revenue drop in South region</li>
+        <li>Top 10 products contribute 60% revenue</li>
+    </ul>
+
+    <h3>Impact</h3>
+    <p>Helped leadership optimize pricing strategy and improve revenue by 8%.</p>
+    `
+},
+{
+    title: "Financial KPI Dashboard",
+    domain: "Finance",
+    tools: "Power BI, Excel",
+    image: "https://via.placeholder.com/400x200",
+    short: "Tracked financial health and cost optimization metrics.",
+    details: "<h2>Finance Project Details Coming Soon</h2>"
+}
+];
+
+function renderProjects() {
+    const grid = document.getElementById("projectGrid");
+    const search = document.getElementById("search").value.toLowerCase();
+    const domain = document.getElementById("domainFilter").value;
+
+    grid.innerHTML = "";
+
+    projects
+    .filter(p => 
+        p.title.toLowerCase().includes(search) &&
+        (domain === "" || p.domain === domain)
+    )
+    .forEach(p => {
+        grid.innerHTML += `
+        <div class="card">
+            <img src="${p.image}">
+            <h3>${p.title}</h3>
+            <p>${p.short}</p>
+            <small>${p.tools}</small><br>
+            <button onclick="openModal('${p.title}')">View Project</button>
         </div>
-    </section>
+        `;
+    });
+}
 
-    <!-- Portfolio Catalogue Section -->
-    <section id="portfolio" class="portfolio container">
-        <h2>Project Catalogue</h2>
-        
-        <!-- Filters -->
-        <div class="filters">
-            <div class="filter-group">
-                <label>Domain:</label>
-                <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="sales">Sales</button>
-                <button class="filter-btn" data-filter="finance">Finance</button>
-                <button class="filter-btn" data-filter="ops">Operations</button>
-            </div>
-            <div class="filter-group">
-                <label>Tool:</label>
-                <button class="filter-btn" data-filter="pbi">Power BI</button>
-                <button class="filter-btn" data-filter="sql">SQL</button>
-                <button class="filter-btn" data-filter="python">Python</button>
-            </div>
-        </div>
+function openModal(title) {
+    const project = projects.find(p => p.title === title);
+    document.getElementById("projectDetails").innerHTML = project.details;
+    document.getElementById("modal").style.display = "block";
+}
 
-        <!-- Grid Layout -->
-        <div class="project-grid" id="project-grid">
-            
-            <!-- SAMPLE PROJECT CARD 1 -->
-            <div class="project-card sales pbi sql">
-                <div class="card-image">
-                    <img src="assets/images/project2-thumb.png" alt="Executive Sales Dashboard">
-                </div>
-                <div class="card-content">
-                    <h3>Global Sales Executive Overview</h3>
-                    <p>Transformed fragmented Excel reporting into a dynamic Power BI suite, enabling regional VPs to identify $2M in revenue leakages.</p>
-                    <div class="card-tools">
-                        <span>Power BI</span><span>SQL</span><span>DAX</span>
-                    </div>
-                    <a href="projects/executive-sales.html" class="view-link">View Case Study →</a>
-                </div>
-            </div>
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
 
-            <!-- SAMPLE PROJECT CARD 2 -->
-            <div class="project-card finance pbi python">
-                <div class="card-image">
-                    <img src="assets/images/project3-thumb.png" alt="FP&A Variance Analysis">
-                </div>
-                <div class="card-content">
-                    <h3>FP&A Monthly Variance Analysis</h3>
-                    <p>Automated actuals vs. budget variance reporting using Python for ETL and Power BI for visualization, saving 20h/month of manual effort.</p>
-                    <div class="card-tools">
-                        <span>Python (Pandas)</span><span>Power BI</span>
-                    </div>
-                    <a href="#" class="view-link">View Case Study →</a>
-                </div>
-            </div>
+document.getElementById("search").addEventListener("input", renderProjects);
+document.getElementById("domainFilter").addEventListener("change", renderProjects);
 
-            <!-- SAMPLE PROJECT CARD 3 -->
-            <div class="project-card ops sql">
-                <div class="card-image">
-                    <img src="assets/images/project4-thumb.png" alt="Customer Churn Prediction SQL">
-                </div>
-                <div class="card-content">
-                    <h3>Advanced SQL: Customer Churn Cohort Analysis</h3>
-                    <p>Developed complex SQL scripts using CTEs and window functions to segment customers and identify high-churn risk cohorts.</p>
-                    <div class="card-tools">
-                        <span>T-SQL</span><span>Window Functions</span>
-                    </div>
-                    <a href="#" class="view-link">View Case Study →</a>
-                </div>
-            </div>
+renderProjects();
 
-        </div>
-    </section>
+</script>
 
-    <!-- Footer -->
-    <footer class="container">
-        <p>&copy; 2023 [Your Name]. All rights reserved.</p>
-        <div class="social-links">
-            <a href="your-linkedin-url" target="_blank">LinkedIn</a>
-            <a href="your-github-url" target="_blank">GitHub</a>
-        </div>
-    </footer>
-
-    <script src="assets/js/script.js"></script>
 </body>
 </html>
