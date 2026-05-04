@@ -46,19 +46,25 @@ input, select {
 
 .card {
     background: #1e293b;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
     transition: 0.3s;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    background: #334155;
+    transform: translateY(-8px);
 }
 
 .card img {
     width: 100%;
-    border-radius: 6px;
+    height: 160px;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 15px;
 }
 
 button {
@@ -106,7 +112,16 @@ button {
         <a href="#" style="color:white;">LinkedIn</a>
     </div>
 </header>
-
+    
+<section style="padding:60px 40px; text-align:center;">
+    <h2 style="font-size:32px; margin-bottom:10px;">
+        Turning Data into Business Decisions
+    </h2>
+    <p style="color:#94a3b8; max-width:600px; margin:auto;">
+        5+ years experience delivering Power BI & SQL solutions that drive revenue, reduce costs, and improve operational visibility.
+    </p>
+</section>
+    
 <div class="container">
 
     <!-- Filters -->
