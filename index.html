@@ -351,31 +351,58 @@ const projects = [
         <hr>
         
         <h3><u>Business Problem</u></h3>
-        <p>Sales leadership lacked visibility into declining revenue trends across regions.</p>
+        <p>Operations leadership lacked centralized visibility into resource utilization, productivity performance, and annotation quality metrics across projects and teams. 
+        Manual tracking through spreadsheets made it difficult to identify operational bottlenecks, monitor workforce efficiency, and take timely decisions.</p>
         
         <h3><u>Objective</u></h3>
-        <p>Enable real-time tracking of sales KPIs and identify underperforming segments.</p>
-        
-        <h3><u>Dataset</u></h3>
-        <p>Transactional sales data (2M+ rows) from ERP system.</p>
+        <p>Develop an enterprise-grade analytics solution to monitor Resource Planning, Productivity, and Quality KPIs through interactive dashboards, 
+        enabling faster operational decision-making and improved workforce optimization.</p>
         
         <h3><u>Data Transformation</u></h3>
-        <p>Handled missing values, created date hierarchy, normalized product categories.</p>
+        <ul>
+            <li>Cleaned and standardized the operational datasets</li>
+            <li>Created centralized Date dimension table</li>
+            <li>Built calculated KPIs and performance metrics</li>
+            <li>Optimized data structure using star schema modeling</li>
+            <li>Applied business logic for utilization, availability, backlog, and quality calculations</li>
+        </ul>
         
         <h3><u>Data Model</u></h3>
-        <p>Star schema with fact_sales and dimension tables.</p>
+        <p>Implemented a scalable star schema model using:</p>
+        <ul>
+            <li>FactProductivity</li>
+            <li>FactQuality</li>
+            <li>FactResourcePlanning</li>
+            <li>Date Table</li>
+            <li>Dimension tables for Users and Projects</li>
+        </ul>
         
         <h3><u>DAX</u></h3>
-        <p>Total Revenue, YoY Growth %, Profit Margin.</p>
-        
+        <p>Developed advanced DAX measures for:</p>
+         <ul>
+            <li>Utilization %</li>
+            <li>Productivity Score</li>
+            <li>Rework Rate %</li>
+            <li>Availability %</li>
+            <li>Planned vs Capacity Hours</li>
+            <li>Tasks per User</li>
+            <li>Operational variance analysis</li>
+            <li>Dynamic KPI indicators and conditional formatting</li>
+        </ul>
+            
         <h3><u>Insights</u></h3>
         <ul>
-            <li>15% revenue drop in South region</li>
-            <li>Top 10 products contribute 60% revenue</li>
+            <li>Maintained 98%+ workforce availability across projects</li>
+            <li>Identified utilization patterns and resource distribution trends</li>
+            <li>Monitored project-level productivity fluctuations</li>
+            <li>Tracked quality rework trends and operational efficiency</li>
+            <li>Enabled visibility into team-wise workload balancing and capacity planning</li>
+
         </ul>
         
         <h3><u>Impact</u></h3>
-        <p>Helped leadership optimize pricing strategy and improve revenue by 8%.</p>
+        <p>Enabled operations and project management teams to improve workforce planning, monitor performance proactively, 
+        reduce operational inefficiencies, and make faster data-driven decisions through centralized operational analytics.</p>
         `
 }, 
 { 
