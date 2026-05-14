@@ -255,26 +255,111 @@ input, select {
     gap: 8px;
 }
 
-/* MODAL */
+/* MODAL OVERLAY */
 .modal {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.85);
+
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+
+    z-index: 99999;
+
+    overflow-y: auto;      /* ENABLE VERTICAL SCROLL */
+    padding: 40px 20px;    /* BREATHING SPACE */
+    box-sizing: border-box;
 }
 
+/* MODAL BOX */
 .modal-content {
-    background: #111c2d;
-    margin: 100px auto;
-    padding: 30px;
-    width: 80%;
-    border-radius: 14px;
+    position: relative;
+
+    background: linear-gradient(135deg, #111c2d, #0f1b31);
+
+    width: min(1400px, 92%);
+    margin: 40px auto;
+
+    padding: 40px;
+
+    border-radius: 20px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    box-shadow:
+        0 20px 80px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(255,255,255,0.03);
+
+    animation: modalFade 0.3s ease;
 }
 
+/* MODAL ANIMATION */
+@keyframes modalFade {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* CLOSE BUTTON */
 .close {
-    float: right;
+    position: absolute;
+    top: 20px;
+    right: 24px;
+
     cursor: pointer;
-    font-size: 20px;
+
+    font-size: 32px;
+    font-weight: 300;
+
+    color: #e2e8f0;
+
+    transition: 0.3s ease;
+}
+
+.close:hover {
+    transform: rotate(90deg);
+    color: #38bdf8;
+}
+
+/* MODAL TYPOGRAPHY */
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+
+    font-size: 42px;
+    font-weight: 700;
+
+    color: white;
+}
+
+.modal-content h3 {
+    margin-top: 32px;
+    margin-bottom: 12px;
+
+    color: #38bdf8;
+    font-size: 26px;
+}
+
+.modal-content p,
+.modal-content li {
+    color: #dbe4f0;
+    line-height: 1.8;
+    font-size: 17px;
+}
+
+.modal-content ul {
+    padding-left: 24px;
+}
+
+.modal-content hr {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    margin: 20px 0 30px;
 }
 
 </style>
@@ -463,12 +548,18 @@ function renderProjects() {
 
 function openModal(title) {
     const project = projects.find(p => p.title === title);
+
     document.getElementById("projectDetails").innerHTML = project.details;
+
     document.getElementById("modal").style.display = "block";
+
+    document.body.style.overflow = "hidden";
 }
 
 function closeModal() {
     document.getElementById("modal").style.display = "none";
+
+    document.body.style.overflow = "auto";
 }
 
 document.getElementById("search").addEventListener("input", renderProjects);
