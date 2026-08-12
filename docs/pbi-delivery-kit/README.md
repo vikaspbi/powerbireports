@@ -20,7 +20,19 @@ Reusable Cursor kit that runs a Power BI engagement from requirements through do
 5. QA / Validation (`pbi-qa`)
 6. Documentation (`pbi-documentation`)
 
-## How to use
+## How to use (non-technical — recommended)
+
+Open **[Delivery Studio](../../studio/index.html)** in the browser:
+
+1. Click **New project**
+2. Upload requirements / report files
+3. Run each stage (optional Gemini API key) or paste Cursor outputs
+4. Download stage files or the full project ZIP
+5. Lock a stage when you are happy, then continue
+
+Details: [`studio/README.md`](../../studio/README.md)
+
+## How to use (Cursor agents)
 
 1. Open this repo in Cursor.
 2. Start Agent chat.

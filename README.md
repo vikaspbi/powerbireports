@@ -51,9 +51,10 @@ Explore all projects: [Projects Website](https://vikaspbi.github.io/powerbirepor
 
 ---
 
-## Power BI Delivery Kit (Cursor)
+## Power BI Delivery Kit
 
-This repo also hosts a reusable **Power BI Delivery Kit** — six specialist agents + one orchestrator skill for end-to-end report delivery (requirements → docs), with per-project folders under `projects/`.
+Reusable end-to-end Power BI delivery workflow (requirements → docs).
 
-- Quick start: [docs/pbi-delivery-kit/README.md](docs/pbi-delivery-kit/README.md)
-- In Cursor: run `/pbi-delivery`
+- **Easy UI (recommended):** open [Delivery Studio](studio/index.html) — upload / download / run stages in the browser
+- Kit docs: [docs/pbi-delivery-kit/README.md](docs/pbi-delivery-kit/README.md)
+- In Cursor (advanced): run `/pbi-delivery`
