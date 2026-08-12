@@ -48,3 +48,12 @@ Explore all projects: [Projects Website](https://vikaspbi.github.io/powerbirepor
 ---
 
 💡 *I believe dashboards should not just look good — they should influence decisions.*
+
+---
+
+## Power BI Delivery Kit (Cursor)
+
+This repo also hosts a reusable **Power BI Delivery Kit** — six specialist agents + one orchestrator skill for end-to-end report delivery (requirements → docs), with per-project folders under `projects/`.
+
+- Quick start: [docs/pbi-delivery-kit/README.md](docs/pbi-delivery-kit/README.md)
+- In Cursor: run `/pbi-delivery`

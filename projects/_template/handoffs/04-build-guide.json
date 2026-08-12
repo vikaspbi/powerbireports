@@ -1,0 +1,12 @@
+{
+  "power_query_steps": [],
+  "relationships": [],
+  "dax_measures": [],
+  "visual_specs": [],
+  "meta": {
+    "project_name": "{{PROJECT_NAME}}",
+    "locked": false,
+    "applied_to_report": false,
+    "report_path": null
+  }
+}
