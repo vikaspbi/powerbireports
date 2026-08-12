@@ -1,38 +1,46 @@
 (() => {
   const DB_NAME = "pbi-delivery-studio";
   const DB_VERSION = 1;
-  const LS_PROJECTS = "pbiStudio.projects.v1";
-  const LS_SETTINGS = "pbiStudio.settings.v1";
+  const LS_PROJECTS = "pbiStudio.projects.v2";
 
   const $ = (id) => document.getElementById(id);
 
   const state = {
     projects: loadProjects(),
-    settings: loadSettings(),
     currentId: null,
     currentStage: 1,
+    pendingFiles: [],
     db: null
   };
 
   function loadProjects() {
-    try { return JSON.parse(localStorage.getItem(LS_PROJECTS) || "[]"); }
-    catch { return []; }
-  }
-  function saveProjects() {
-    localStorage.setItem(LS_PROJECTS, JSON.stringify(state.projects));
-  }
-  function loadSettings() {
     try {
-      return Object.assign(
-        { apiKey: "", model: "gemini-2.0-flash" },
-        JSON.parse(localStorage.getItem(LS_SETTINGS) || "{}")
-      );
+      const v2 = localStorage.getItem(LS_PROJECTS);
+      if (v2) return JSON.parse(v2);
+      // migrate v1 if present
+      const v1 = JSON.parse(localStorage.getItem("pbiStudio.projects.v1") || "[]");
+      return Array.isArray(v1) ? v1.map(migrateProject) : [];
     } catch {
-      return { apiKey: "", model: "gemini-2.0-flash" };
+      return [];
     }
   }
-  function saveSettings() {
-    localStorage.setItem(LS_SETTINGS, JSON.stringify(state.settings));
+
+  function migrateProject(p) {
+    return Object.assign(
+      {
+        messages: [],
+        handoffs: emptyHandoffs(),
+        files: [],
+        stages: emptyStagesStatus(),
+        changelog: []
+      },
+      p,
+      { messages: p.messages || [] }
+    );
+  }
+
+  function saveProjects() {
+    localStorage.setItem(LS_PROJECTS, JSON.stringify(state.projects));
   }
 
   function toast(msg) {
@@ -40,15 +48,17 @@
     el.textContent = msg;
     el.classList.remove("hidden");
     clearTimeout(toast._t);
-    toast._t = setTimeout(() => el.classList.add("hidden"), 3500);
+    toast._t = setTimeout(() => el.classList.add("hidden"), 3200);
   }
 
   function slugify(name) {
-    return String(name)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "")
-      .slice(0, 60) || "project";
+    return (
+      String(name)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "")
+        .slice(0, 60) || "project"
+    );
   }
 
   function emptyHandoffs() {
@@ -74,6 +84,24 @@
     return state.projects.find((p) => p.id === state.currentId) || null;
   }
 
+  function stageMeta(id) {
+    return window.PBI_STAGES.find((s) => s.id === id);
+  }
+
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function formatBytes(n) {
+    if (n < 1024) return `${n} B`;
+    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+    return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
   function openDb() {
     return new Promise((resolve, reject) => {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -86,10 +114,6 @@
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
-  }
-
-  function fileKey(projectId, name) {
-    return `${projectId}::${name}`;
   }
 
   function putFile(record) {
@@ -126,10 +150,33 @@
     });
   }
 
-  function formatBytes(n) {
-    if (n < 1024) return `${n} B`;
-    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-    return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+  function addMessage(role, text, extra = {}) {
+    const p = currentProject();
+    if (!p) return;
+    const msg = {
+      id: crypto.randomUUID(),
+      role,
+      text,
+      stage: state.currentStage,
+      at: new Date().toISOString(),
+      fileNames: extra.fileNames || [],
+      artifact: extra.artifact || null
+    };
+    p.messages = p.messages || [];
+    p.messages.push(msg);
+    p.updated_at = msg.at;
+    saveProjects();
+    return msg;
+  }
+
+  function guideForStage(s, p) {
+    const tasks = s.tasks.map((t) => `- ${t}`).join("\n");
+    return `${s.welcome}
+
+**Your tasks (now)**
+${tasks}
+
+Chat here like normal. When you're ready for the AI work, click **Copy prompt for Cursor**, paste it into Cursor Agent, then paste the reply back into this chat.`;
   }
 
   function renderHome() {
@@ -138,7 +185,7 @@
     $("btnExportZip").disabled = true;
     const list = $("projectList");
     if (!state.projects.length) {
-      list.innerHTML = `<p class="muted">No projects yet. Click <strong>New project</strong> to start.</p>`;
+      list.innerHTML = `<p class="muted">No projects yet. Click <strong>New project</strong> to open a chat.</p>`;
       return;
     }
     list.innerHTML = state.projects
@@ -149,22 +196,13 @@
         return `<button type="button" class="project-card" data-id="${p.id}">
           <h4>${escapeHtml(p.name)}</h4>
           <p class="muted">${escapeHtml(p.project_type)} · ${escapeHtml(p.scenario_type)}</p>
-          <p>Stage ${p.current_stage}/6 · ${locked} locked</p>
-          <p class="muted small">Updated ${escapeHtml(p.updated_at || "—")}</p>
+          <p>Stage ${p.current_stage}/6 · ${locked} locked · ${(p.messages || []).length} messages</p>
         </button>`;
       })
       .join("");
     list.querySelectorAll(".project-card").forEach((btn) => {
       btn.addEventListener("click", () => openProject(btn.dataset.id));
     });
-  }
-
-  function escapeHtml(s) {
-    return String(s ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
   }
 
   function openProject(id, stage) {
@@ -176,111 +214,91 @@
     $("viewWorkspace").classList.remove("hidden");
     $("btnExportZip").disabled = false;
     $("wsProjectName").textContent = p.name;
-    $("wsProjectMeta").textContent = `${p.slug} · ${p.project_type} · start: ${p.scenario_type}`;
+    $("wsProjectMeta").textContent = `${p.slug} · ${p.project_type}`;
+    if (!p.messages || !p.messages.length) {
+      const s = stageMeta(state.currentStage);
+      addMessage("guide", guideForStage(s, p));
+    }
     renderRail();
-    renderStage();
+    renderChat();
+    renderDownloads();
   }
 
   function renderRail() {
     const p = currentProject();
-    const rail = $("stageRail");
-    rail.innerHTML = window.PBI_STAGES.map((s) => {
+    $("stageRail").innerHTML = window.PBI_STAGES.map((s) => {
       const st = p.stages[s.key] || {};
       const active = s.id === state.currentStage ? "active" : "";
       const locked = st.locked ? "locked" : "";
-      const label = st.locked ? "Locked" : st.status === "in_progress" ? "In progress" : "Not started";
+      const label = st.locked ? "Locked" : p.handoffs?.[s.handoff] ? "Output saved" : "Open";
       return `<button type="button" class="stage-btn ${active} ${locked}" data-stage="${s.id}">
         <strong>${s.id}. ${escapeHtml(s.title)}</strong>
         <span class="s-status">${label}</span>
       </button>`;
     }).join("");
-    rail.querySelectorAll(".stage-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        state.currentStage = Number(btn.dataset.stage);
-        const proj = currentProject();
-        proj.current_stage = state.currentStage;
-        proj.updated_at = new Date().toISOString();
-        saveProjects();
-        renderRail();
-        renderStage();
-      });
+    $("stageRail").querySelectorAll(".stage-btn").forEach((btn) => {
+      btn.addEventListener("click", () => switchStage(Number(btn.dataset.stage)));
     });
   }
 
-  async function renderStage() {
+  function switchStage(id, announce = true) {
     const p = currentProject();
-    const s = window.PBI_STAGES.find((x) => x.id === state.currentStage);
+    state.currentStage = id;
+    p.current_stage = id;
+    p.updated_at = new Date().toISOString();
+    saveProjects();
+    const s = stageMeta(id);
     $("stageEyebrow").textContent = `Stage ${s.id} of 6`;
     $("stageTitle").textContent = s.title;
-    $("yourTasks").innerHTML = `<h4>Your tasks (now)</h4><ul>${s.tasks
-      .map((t) => `<li>${escapeHtml(t)}</li>`)
-      .join("")}</ul><p class="muted small" style="margin:0.6rem 0 0">${escapeHtml(s.uploadHint)}</p>`;
-
-    const noteKey = `notes_stage_${s.id}`;
-    $("stageNotes").value = p[noteKey] || "";
-
-    const files = (p.files || []).filter((f) => f.stage === s.id || f.stage === 0);
-    $("fileList").innerHTML = files.length
-      ? files
-          .map(
-            (f) => `<li class="file-row" data-fid="${escapeHtml(f.id)}">
-            <div><div>${escapeHtml(f.name)}</div><div class="meta">${formatBytes(f.size)} · ${escapeHtml(f.type || "file")}</div></div>
-            <button type="button" class="btn ghost" data-del="${escapeHtml(f.id)}">Remove</button>
-          </li>`
-          )
-          .join("")
-      : `<li class="muted small">No files uploaded for this stage yet.</li>`;
-
-    $("fileList").querySelectorAll("[data-del]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const id = btn.getAttribute("data-del");
-        p.files = (p.files || []).filter((f) => f.id !== id);
-        await deleteOneFile(id);
-        saveProjects();
-        renderStage();
-        toast("File removed");
-      });
-    });
-
-    renderDownloads(p, s);
-    renderOutput(p, s);
+    if (announce) addMessage("guide", guideForStage(s, p));
+    renderRail();
+    renderChat();
+    renderDownloads();
   }
 
-  function renderDownloads(p, s) {
+  function renderChat() {
+    const p = currentProject();
+    const s = stageMeta(state.currentStage);
+    $("stageEyebrow").textContent = `Stage ${s.id} of 6`;
+    $("stageTitle").textContent = s.title;
+    const log = $("chatLog");
+    log.innerHTML = (p.messages || [])
+      .map((m) => {
+        const files = (m.fileNames || [])
+          .map((n) => `<span class="file-chip">${escapeHtml(n)}</span>`)
+          .join("");
+        let body;
+        if (m.role === "guide" && window.marked) body = window.marked.parse(m.text);
+        else if (m.artifact) body = `<p>${escapeHtml(m.text)}</p><pre>${escapeHtml(
+          typeof m.artifact === "string" ? m.artifact.slice(0, 4000) : JSON.stringify(m.artifact, null, 2).slice(0, 4000)
+        )}</pre>`;
+        else body = `<p>${escapeHtml(m.text).replace(/\n/g, "<br>")}</p>`;
+        return `<div class="msg ${m.role}">
+          <p class="who">${m.role === "user" ? "You" : "Studio guide"} · stage ${m.stage}</p>
+          <div>${body}</div>
+          ${files ? `<div class="files">${files}</div>` : ""}
+        </div>`;
+      })
+      .join("");
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function renderDownloads() {
+    const p = currentProject();
+    const s = stageMeta(state.currentStage);
     const items = [];
-    const handoff = p.handoffs?.[s.handoff];
-    if (handoff) {
-      items.push(`<button type="button" data-dl="handoff">${escapeHtml(s.handoff)}</button>`);
+    if (p.handoffs?.[s.handoff]) {
+      items.push(`<button type="button" data-dl="handoff">Download ${escapeHtml(s.handoff)}</button>`);
     }
-    items.push(`<button type="button" data-dl="notes">Stage ${s.id} notes (.txt)</button>`);
-    items.push(`<button type="button" data-dl="status">stage-status.json</button>`);
+    items.push(`<button type="button" data-dl="chat">Download chat transcript</button>`);
+    items.push(`<button type="button" data-dl="status">Download stage-status.json</button>`);
     if (p.handoffs?.["06-documentation.md"]) {
-      items.push(`<button type="button" data-dl="docs">Full documentation (.md)</button>`);
+      items.push(`<button type="button" data-dl="docs">Download documentation</button>`);
     }
-    $("downloadList").innerHTML = items.join("") || `<p class="muted small">No outputs yet.</p>`;
-
+    $("downloadList").innerHTML = items.join("");
     $("downloadList").querySelectorAll("button").forEach((btn) => {
-      btn.addEventListener("click", () => downloadThing(btn.dataset.dl, s));
+      btn.addEventListener("click", () => downloadThing(btn.dataset.dl));
     });
-  }
-
-  function renderOutput(p, s) {
-    const raw = p.handoffs?.[s.handoff];
-    const md = p.last_markdown?.[s.id];
-    const box = $("stageOutput");
-    if (!raw && !md) {
-      box.classList.add("muted");
-      box.textContent = "Run a stage or paste an output to see it here.";
-      return;
-    }
-    box.classList.remove("muted");
-    if (md && window.marked) {
-      box.innerHTML = window.marked.parse(md);
-    } else if (typeof raw === "string") {
-      box.innerHTML = window.marked ? window.marked.parse(raw) : `<pre>${escapeHtml(raw)}</pre>`;
-    } else {
-      box.innerHTML = `<pre>${escapeHtml(JSON.stringify(raw, null, 2))}</pre>`;
-    }
   }
 
   function downloadText(filename, text, mime) {
@@ -293,21 +311,6 @@
     URL.revokeObjectURL(url);
   }
 
-  function downloadThing(kind, s) {
-    const p = currentProject();
-    if (kind === "handoff") {
-      const data = p.handoffs[s.handoff];
-      const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
-      downloadText(s.handoff, text, s.handoffType === "markdown" ? "text/markdown" : "application/json");
-    } else if (kind === "notes") {
-      downloadText(`stage-${s.id}-notes.txt`, p[`notes_stage_${s.id}`] || "");
-    } else if (kind === "status") {
-      downloadText("stage-status.json", JSON.stringify(buildStatus(p), null, 2), "application/json");
-    } else if (kind === "docs") {
-      downloadText("06-documentation.md", p.handoffs["06-documentation.md"] || "", "text/markdown");
-    }
-  }
-
   function buildStatus(p) {
     return {
       project_name: p.slug,
@@ -315,29 +318,50 @@
       project_type: p.project_type,
       current_stage: p.current_stage,
       stages: p.stages,
-      open_questions: p.open_questions || [],
       changelog: p.changelog || []
     };
   }
 
-  async function deleteOneFile(id) {
-    return new Promise((resolve, reject) => {
-      const tx = state.db.transaction("files", "readwrite");
-      tx.objectStore("files").delete(id);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
+  function downloadThing(kind) {
+    const p = currentProject();
+    const s = stageMeta(state.currentStage);
+    if (kind === "handoff") {
+      const data = p.handoffs[s.handoff];
+      const text = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      downloadText(s.handoff, text, s.handoffType === "markdown" ? "text/markdown" : "application/json");
+    } else if (kind === "status") {
+      downloadText("stage-status.json", JSON.stringify(buildStatus(p), null, 2), "application/json");
+    } else if (kind === "docs") {
+      downloadText("06-documentation.md", p.handoffs["06-documentation.md"] || "", "text/markdown");
+    } else if (kind === "chat") {
+      const text = (p.messages || [])
+        .map((m) => `[${m.at}] ${m.role.toUpperCase()} (stage ${m.stage})\n${m.text}\n`)
+        .join("\n---\n\n");
+      downloadText(`${p.slug}-chat.txt`, text);
+    }
   }
 
-  async function handleFiles(fileList) {
-    const p = currentProject();
-    if (!p) return;
+  function renderPending() {
+    $("pendingFiles").innerHTML = state.pendingFiles
+      .map((f) => `<span>${escapeHtml(f.name)}</span>`)
+      .join("");
+  }
+
+  async function queueFiles(fileList) {
     for (const file of Array.from(fileList)) {
       if (file.size > 80 * 1024 * 1024) {
-        toast(`${file.name} is over 80MB — skip or zip a smaller export.`);
+        toast(`${file.name} is over 80MB — try a smaller export or zip`);
         continue;
       }
-      const id = fileKey(p.id, `${Date.now()}-${file.name}`);
+      state.pendingFiles.push(file);
+    }
+    renderPending();
+  }
+
+  async function persistPendingFiles(p) {
+    const names = [];
+    for (const file of state.pendingFiles) {
+      const id = `${p.id}::${Date.now()}-${file.name}`;
       const buffer = await file.arrayBuffer();
       await putFile({
         id,
@@ -356,149 +380,123 @@
         size: file.size,
         stage: state.currentStage
       });
+      names.push(file.name);
     }
-    p.updated_at = new Date().toISOString();
-    saveProjects();
-    renderStage();
-    toast("Upload saved in this browser");
+    state.pendingFiles = [];
+    renderPending();
+    return names;
   }
 
   function extractJson(text) {
     const cleaned = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
-    try { return JSON.parse(cleaned); } catch (_) {}
+    try {
+      return JSON.parse(cleaned);
+    } catch (_) {}
     const start = cleaned.indexOf("{");
     const end = cleaned.lastIndexOf("}");
-    if (start >= 0 && end > start) {
-      return JSON.parse(cleaned.slice(start, end + 1));
-    }
-    throw new Error("AI response was not valid JSON");
+    if (start >= 0 && end > start) return JSON.parse(cleaned.slice(start, end + 1));
+    throw new Error("not json");
   }
 
-  async function readTextUploads(p, stageId) {
-    const parts = [];
-    for (const f of p.files || []) {
-      if (f.stage !== stageId && f.stage !== 0) continue;
-      const lower = f.name.toLowerCase();
-      const isText =
-        /json|txt|md|csv|tsv|xml|tmdl/.test(lower) ||
-        (f.type || "").startsWith("text/") ||
-        f.type === "application/json";
-      if (!isText) {
-        parts.push(`[Binary file uploaded: ${f.name} (${formatBytes(f.size)}) — not inlined]`);
-        continue;
-      }
-      if (f.size > 1.5 * 1024 * 1024) {
-        parts.push(`[Text file too large to inline: ${f.name}]`);
-        continue;
-      }
-      const rec = await getFile(f.id);
-      if (!rec?.blob) continue;
-      const text = new TextDecoder().decode(rec.blob);
-      parts.push(`--- FILE: ${f.name} ---\n${text}`);
-    }
-    return parts.join("\n\n");
+  function looksLikeHandoff(text) {
+    const t = text.trim();
+    if (t.length < 40) return false;
+    if (t.startsWith("{") || t.startsWith("```")) return true;
+    if (/requirements_matrix|wireframe_spec|tables_found|dax_measures|test_cases|documentation_markdown/.test(t))
+      return true;
+    if (t.startsWith("#") && t.length > 200) return true;
+    return false;
   }
 
-  async function runStageAi() {
+  function saveHandoffFromText(text) {
     const p = currentProject();
-    const s = window.PBI_STAGES.find((x) => x.id === state.currentStage);
-    if (!state.settings.apiKey) {
-      $("modalSettings").showModal();
-      toast("Add a Gemini API key to run AI in the Studio (or paste Cursor output instead).");
-      return;
+    const s = stageMeta(state.currentStage);
+    p.handoffs = p.handoffs || emptyHandoffs();
+    if (s.handoffType === "markdown") {
+      try {
+        const parsed = extractJson(text);
+        p.handoffs[s.handoff] =
+          parsed.documentation_markdown || parsed.chat_markdown || text;
+      } catch {
+        p.handoffs[s.handoff] = text;
+      }
+    } else {
+      try {
+        const parsed = extractJson(text);
+        const { chat_markdown, ...rest } = parsed;
+        p.handoffs[s.handoff] = Object.keys(rest).length ? rest : parsed;
+      } catch {
+        // store raw wrapper so user can still download
+        p.handoffs[s.handoff] = { raw_text: text, note: "Saved as raw text — not valid JSON" };
+      }
     }
-
-    // Persist notes first
-    p[`notes_stage_${s.id}`] = $("stageNotes").value;
+    p.stages[s.key].status = "awaiting_user";
+    p.stages[s.key].updated_at = new Date().toISOString();
     saveProjects();
+  }
 
+  function buildCursorPrompt() {
+    const p = currentProject();
+    const s = stageMeta(state.currentStage);
+    const recent = (p.messages || [])
+      .filter((m) => m.role === "user")
+      .slice(-12)
+      .map((m) => m.text)
+      .join("\n\n");
+    const files = (p.files || []).map((f) => `- ${f.name} (${formatBytes(f.size)}, stage ${f.stage})`).join("\n");
     const prior = {};
     Object.entries(p.handoffs || {}).forEach(([k, v]) => {
       if (v != null) prior[k] = v;
     });
 
-    const uploads = await readTextUploads(p, s.id);
-    const userPrompt = [
-      `Project name: ${p.name}`,
-      `Project type: ${p.project_type}`,
-      `Scenario: ${p.scenario_type}`,
-      `Current stage: ${s.id} ${s.title}`,
-      "",
-      "User notes:",
-      $("stageNotes").value || "(none)",
-      "",
-      "Uploaded text files:",
-      uploads || "(none)",
-      "",
-      "Prior handoffs JSON:",
-      JSON.stringify(prior, null, 2)
-    ].join("\n");
+    return `/pbi-delivery
 
-    $("btnRunStage").disabled = true;
-    $("btnRunStage").textContent = "Running…";
-    toast("Running stage with Gemini…");
+Project: ${p.name} (${p.slug})
+Project type: ${p.project_type}
+Scenario: ${p.scenario_type}
+Please work on STAGE ${s.id} — ${s.title}.
+Use projects/${p.slug}/ if present, or treat this chat package as the source of truth.
 
+Uploaded files in Delivery Studio:
+${files || "(none listed)"}
+
+Recent user messages from Studio chat:
+${recent || "(none)"}
+
+Known handoffs JSON so far:
+${JSON.stringify(prior, null, 2)}
+
+Follow the Power BI Delivery Kit agent for this stage.
+After you finish, reply with the stage handoff JSON (and chat-readable markdown).
+I will paste your reply back into Delivery Studio to save/download.`;
+  }
+
+  async function copyCursorPrompt() {
+    const text = buildCursorPrompt();
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-        state.settings.model
-      )}:generateContent?key=${encodeURIComponent(state.settings.apiKey)}`;
-
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-          systemInstruction: { parts: [{ text: s.system }] },
-          generationConfig: { temperature: 0.2, responseMimeType: "application/json" }
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data?.error?.message || `API error ${res.status}`);
-      }
-      const text = data?.candidates?.[0]?.content?.parts?.map((x) => x.text).join("\n") || "";
-      const parsed = extractJson(text);
-
-      p.handoffs = p.handoffs || emptyHandoffs();
-      p.last_markdown = p.last_markdown || {};
-      p.last_markdown[s.id] = parsed.chat_markdown || parsed.documentation_markdown || "";
-
-      if (s.handoffType === "markdown") {
-        p.handoffs[s.handoff] =
-          parsed.documentation_markdown || parsed.chat_markdown || "# Documentation\n";
-      } else {
-        const { chat_markdown, ...rest } = parsed;
-        p.handoffs[s.handoff] = rest;
-      }
-
-      if (parsed.open_questions) p.open_questions = parsed.open_questions;
-      p.stages[s.key].status = "awaiting_user";
-      p.stages[s.key].updated_at = new Date().toISOString();
-      p.updated_at = p.stages[s.key].updated_at;
-      p.changelog = p.changelog || [];
-      p.changelog.push({
-        at: p.updated_at,
-        change: `Ran stage ${s.id} with AI`
-      });
-      saveProjects();
-      renderRail();
-      renderStage();
-      toast("Stage output ready — review, then Lock when happy");
-    } catch (err) {
-      console.error(err);
-      toast(err.message || "AI run failed");
-    } finally {
-      $("btnRunStage").disabled = false;
-      $("btnRunStage").textContent = "Run this stage with AI";
+      await navigator.clipboard.writeText(text);
+      addMessage(
+        "guide",
+        "Copied a Cursor prompt to your clipboard.\n\n1. Open Cursor Agent chat on this repo\n2. Paste and send\n3. Copy Cursor’s reply\n4. Paste it back into this Studio chat and press Send"
+      );
+      renderChat();
+      toast("Prompt copied — paste into Cursor");
+    } catch {
+      addMessage("guide", "Could not auto-copy. Here is the prompt:\n\n```\n" + text + "\n```");
+      renderChat();
     }
   }
 
-  function lockStage() {
+  function lockStage(fromChat = false) {
     const p = currentProject();
-    const s = window.PBI_STAGES.find((x) => x.id === state.currentStage);
+    const s = stageMeta(state.currentStage);
     if (!p.handoffs?.[s.handoff]) {
-      toast("No output to lock yet — run AI or paste an output first");
+      toast("Save a Cursor output in chat first, then lock");
+      addMessage(
+        "guide",
+        "Nothing to lock yet. Paste the Cursor stage output into chat (JSON/markdown), send it, then say **lock**."
+      );
+      renderChat();
       return;
     }
     p.stages[s.key].locked = true;
@@ -506,51 +504,79 @@
     p.stages[s.key].updated_at = new Date().toISOString();
     p.changelog = p.changelog || [];
     p.changelog.push({ at: p.stages[s.key].updated_at, change: `Locked stage ${s.id}` });
-    if (s.id < 6) {
-      p.current_stage = s.id + 1;
-      state.currentStage = s.id + 1;
-    }
-    p.updated_at = new Date().toISOString();
     saveProjects();
+    addMessage("guide", `Stage ${s.id} is locked.`);
+    if (s.id < 6) {
+      state.currentStage = s.id + 1;
+      p.current_stage = s.id + 1;
+      saveProjects();
+      const next = stageMeta(state.currentStage);
+      addMessage("guide", guideForStage(next, p));
+    } else {
+      addMessage("guide", "All stages complete. Use **Download project ZIP** to export everything.");
+    }
     renderRail();
-    renderStage();
+    renderChat();
+    renderDownloads();
     toast(`Stage ${s.id} locked`);
   }
 
-  function savePastedOutput() {
+  async function handleSend() {
     const p = currentProject();
-    const s = window.PBI_STAGES.find((x) => x.id === state.currentStage);
-    const raw = $("pasteOutput").value.trim();
-    if (!raw) return toast("Paste something first");
-    p.handoffs = p.handoffs || emptyHandoffs();
-    p.last_markdown = p.last_markdown || {};
-    try {
-      if (s.handoffType === "markdown") {
-        p.handoffs[s.handoff] = raw;
-        p.last_markdown[s.id] = raw;
-      } else {
-        const parsed = extractJson(raw);
-        if (parsed.chat_markdown) p.last_markdown[s.id] = parsed.chat_markdown;
-        const { chat_markdown, ...rest } = parsed;
-        p.handoffs[s.handoff] = Object.keys(rest).length ? rest : parsed;
-      }
-      p.stages[s.key].status = "awaiting_user";
-      p.updated_at = new Date().toISOString();
-      saveProjects();
-      $("pasteOutput").value = "";
-      renderStage();
-      toast("Pasted output saved");
-    } catch (err) {
-      if (s.handoffType === "markdown") {
-        p.handoffs[s.handoff] = raw;
-        p.last_markdown[s.id] = raw;
-        saveProjects();
-        renderStage();
-        toast("Saved as markdown");
-      } else {
-        toast("Could not parse JSON — check the paste");
-      }
+    if (!p) return;
+    const text = $("composerInput").value.trim();
+    const hasFiles = state.pendingFiles.length > 0;
+    if (!text && !hasFiles) return;
+
+    const fileNames = await persistPendingFiles(p);
+    $("composerInput").value = "";
+
+    const lower = text.toLowerCase().trim();
+
+    // commands
+    if (/^lock\b/.test(lower)) {
+      if (text || fileNames.length) addMessage("user", text || "(attachments)", { fileNames });
+      lockStage(true);
+      return;
     }
+    if (/^next\b/.test(lower)) {
+      addMessage("user", text, { fileNames });
+      if (state.currentStage < 6) switchStage(state.currentStage + 1);
+      else addMessage("guide", "You are already on the last stage.");
+      renderChat();
+      return;
+    }
+    const stageMatch = lower.match(/^stage\s*([1-6])\b/);
+    if (stageMatch) {
+      addMessage("user", text, { fileNames });
+      switchStage(Number(stageMatch[1]));
+      return;
+    }
+
+    addMessage("user", text || "(uploaded files)", { fileNames });
+
+    if (text && looksLikeHandoff(text)) {
+      saveHandoffFromText(text);
+      addMessage(
+        "guide",
+        `Saved this as **${stageMeta(state.currentStage).handoff}**. You can download it from the left panel, or say **lock** to freeze this stage and move on.`,
+        { artifact: text.slice(0, 1500) }
+      );
+      renderRail();
+      renderDownloads();
+    } else if (fileNames.length && !text) {
+      addMessage(
+        "guide",
+        `Got file(s): ${fileNames.join(", ")}. Click **Copy prompt for Cursor** when you want the AI to use them (attach the same files in Cursor if needed), then paste the reply here.`
+      );
+    } else {
+      addMessage(
+        "guide",
+        "Noted. Keep chatting, upload more, or click **Copy prompt for Cursor** to make the live AI work happen in Cursor — then paste the result back here to download."
+      );
+    }
+    renderChat();
+    saveProjects();
   }
 
   async function exportZip() {
@@ -559,31 +585,21 @@
     const zip = new JSZip();
     const root = `projects/${p.slug}`;
     zip.file(`${root}/stage-status.json`, JSON.stringify(buildStatus(p), null, 2));
-    zip.file(
-      `${root}/README.md`,
-      `# ${p.name}\n\nExported from Power BI Delivery Studio.\n`
-    );
-
+    zip.file(`${root}/README.md`, `# ${p.name}\n\nExported from Power BI Delivery Studio chat.\n`);
     const handoffs = zip.folder(`${root}/handoffs`);
     Object.entries(p.handoffs || {}).forEach(([name, value]) => {
       if (value == null) return;
-      handoffs.file(
-        name,
-        typeof value === "string" ? value : JSON.stringify(value, null, 2)
-      );
+      handoffs.file(name, typeof value === "string" ? value : JSON.stringify(value, null, 2));
     });
-
-    for (let i = 1; i <= 6; i++) {
-      const notes = p[`notes_stage_${i}`];
-      if (notes) handoffs.file(`stage-${i}-notes.txt`, notes);
-    }
-
+    const chatText = (p.messages || [])
+      .map((m) => `[${m.at}] ${m.role} (stage ${m.stage})\n${m.text}\n`)
+      .join("\n---\n\n");
+    handoffs.file("chat-transcript.txt", chatText);
     const inputs = zip.folder(`${root}/inputs`);
     for (const f of p.files || []) {
       const rec = await getFile(f.id);
       if (rec?.blob) inputs.file(f.name, rec.blob);
     }
-
     const blob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -598,10 +614,9 @@
     ev.preventDefault();
     const name = $("newName").value.trim();
     if (!name) return;
-    const id = crypto.randomUUID();
     const jump = Number($("newJump").value);
     const project = {
-      id,
+      id: crypto.randomUUID(),
       name,
       slug: slugify(name),
       project_type: $("newType").value,
@@ -612,28 +627,26 @@
       stages: emptyStagesStatus(),
       handoffs: emptyHandoffs(),
       files: [],
-      last_markdown: {},
-      open_questions: [],
-      changelog: [{ at: new Date().toISOString(), change: "Project created in Delivery Studio" }]
+      messages: [],
+      changelog: [{ at: new Date().toISOString(), change: "Project chat created" }]
     };
     if (jump > 1) {
       for (let i = 1; i < jump; i++) {
-        const s = window.PBI_STAGES[i - 1];
-        project.stages[s.key].status = "skipped_jump";
+        project.stages[window.PBI_STAGES[i - 1].key].status = "skipped_jump";
       }
     }
     state.projects.push(project);
     saveProjects();
     $("modalNew").close();
     $("formNewProject").reset();
-    openProject(id, jump);
-    toast("Project created");
+    openProject(project.id, jump);
+    toast("Chat started");
   }
 
   async function deleteProject() {
     const p = currentProject();
     if (!p) return;
-    if (!confirm(`Delete project "${p.name}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete project "${p.name}"?`)) return;
     await deleteFilesForProject(p.id);
     state.projects = state.projects.filter((x) => x.id !== p.id);
     saveProjects();
@@ -646,53 +659,21 @@
     $("btnNewProject").addEventListener("click", () => $("modalNew").showModal());
     $("btnCancelNew").addEventListener("click", () => $("modalNew").close());
     $("formNewProject").addEventListener("submit", createProject);
-
-    $("btnSettings").addEventListener("click", () => {
-      $("apiKey").value = state.settings.apiKey || "";
-      $("modelName").value = state.settings.model || "gemini-2.0-flash";
-      $("modalSettings").showModal();
-    });
-    $("formSettings").addEventListener("submit", (e) => {
-      e.preventDefault();
-      state.settings.apiKey = $("apiKey").value.trim();
-      state.settings.model = $("modelName").value;
-      saveSettings();
-      $("modalSettings").close();
-      toast(state.settings.apiKey ? "AI key saved in this browser" : "Saved (no key)");
-    });
-    $("btnClearKey").addEventListener("click", () => {
-      $("apiKey").value = "";
-      state.settings.apiKey = "";
-      saveSettings();
-      toast("API key cleared");
-    });
-
     $("btnBackHome").addEventListener("click", renderHome);
     $("btnDeleteProject").addEventListener("click", deleteProject);
     $("btnExportZip").addEventListener("click", exportZip);
-    $("btnRunStage").addEventListener("click", runStageAi);
-    $("btnLockStage").addEventListener("click", lockStage);
-    $("btnSavePaste").addEventListener("click", savePastedOutput);
-
-    $("stageNotes").addEventListener("change", () => {
-      const p = currentProject();
-      if (!p) return;
-      p[`notes_stage_${state.currentStage}`] = $("stageNotes").value;
-      p.updated_at = new Date().toISOString();
-      saveProjects();
+    $("btnCopyCursor").addEventListener("click", copyCursorPrompt);
+    $("btnLockStage").addEventListener("click", () => lockStage(false));
+    $("btnSend").addEventListener("click", handleSend);
+    $("composerInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
     });
-
-    const dz = $("dropzone");
-    $("fileInput").addEventListener("change", (e) => handleFiles(e.target.files));
-    dz.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dz.classList.add("drag");
-    });
-    dz.addEventListener("dragleave", () => dz.classList.remove("drag"));
-    dz.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dz.classList.remove("drag");
-      handleFiles(e.dataTransfer.files);
+    $("fileInput").addEventListener("change", (e) => {
+      queueFiles(e.target.files);
+      e.target.value = "";
     });
   }
 
@@ -704,6 +685,6 @@
 
   init().catch((err) => {
     console.error(err);
-    toast("Studio failed to start — try a modern browser (Chrome/Edge)");
+    toast("Studio failed to start — try Chrome or Edge");
   });
 })();
