@@ -48,13 +48,3 @@ Explore all projects: [Projects Website](https://vikaspbi.github.io/powerbirepor
 ---
 
 💡 *I believe dashboards should not just look good — they should influence decisions.*
-
----
-
-## Power BI Delivery Kit
-
-Reusable end-to-end Power BI delivery workflow (requirements → docs).
-
-- **Easy UI (recommended):** open [Delivery Studio](studio/index.html) — live chat, upload, download (Cursor does the AI)
-- Kit docs: [docs/pbi-delivery-kit/README.md](docs/pbi-delivery-kit/README.md)
-- In Cursor: run `/pbi-delivery`
