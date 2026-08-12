@@ -49,6 +49,24 @@ h1 { margin: 0; font-size: 20px; }
     gap: 12px;
 }
 
+.studio-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: #082016;
+    background: linear-gradient(135deg, #5eead4, #38bdf8);
+    border: 1px solid rgba(255,255,255,0.2);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+    white-space: nowrap;
+}
+.studio-link:hover {
+    transform: translateY(-2px);
+}
+
 /* ICON BUTTON BASE */
 .icon-btn {
     width: 40px;
@@ -370,6 +388,8 @@ input, select {
 <header>
     <h1>Vikas Kumar Paswan | Projects</h1>
 <div class="header-right">
+
+    <a href="studio/index.html" class="studio-link">Delivery Studio</a>
 
     <!-- LinkedIn Icon -->
     <a href="https://www.linkedin.com/in/vikaskumar1802/" target="_blank" class="icon-btn linkedin">

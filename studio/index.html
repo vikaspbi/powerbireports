@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Power BI Delivery Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <a class="back" href="../index.html">← Projects</a>
+      <div>
+        <p class="eyebrow">Power BI Delivery Kit</p>
+        <h1>Delivery Studio</h1>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="btn ghost" id="btnSettings">AI settings</button>
+      <button type="button" class="btn secondary" id="btnExportZip" disabled>Download project ZIP</button>
+      <button type="button" class="btn primary" id="btnNewProject">New project</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <!-- HOME -->
+    <section id="viewHome" class="view">
+      <div class="hero-panel">
+        <h2>Upload in. Download out.</h2>
+        <p>
+          A simple workspace for your Power BI delivery stages — no terminal, no folder hunting.
+          Create a project, upload requirements or report files, run each stage, and download the results.
+        </p>
+        <div class="hero-steps">
+          <div><span>1</span> Create project</div>
+          <div><span>2</span> Upload files / notes</div>
+          <div><span>3</span> Run stages 1–6</div>
+          <div><span>4</span> Download outputs</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <h3>Your projects</h3>
+        <p class="muted">Everything stays in this browser until you download a ZIP backup.</p>
+      </div>
+      <div id="projectList" class="project-grid"></div>
+    </section>
+
+    <!-- WORKSPACE -->
+    <section id="viewWorkspace" class="view hidden">
+      <div class="workspace-head">
+        <button type="button" class="btn ghost" id="btnBackHome">← All projects</button>
+        <div>
+          <h2 id="wsProjectName">Project</h2>
+          <p class="muted" id="wsProjectMeta"></p>
+        </div>
+        <button type="button" class="btn danger ghost" id="btnDeleteProject">Delete project</button>
+      </div>
+
+      <div class="workspace-grid">
+        <aside class="stage-rail" id="stageRail"></aside>
+
+        <section class="stage-panel">
+          <div class="stage-panel-head">
+            <div>
+              <p class="eyebrow" id="stageEyebrow">Stage</p>
+              <h3 id="stageTitle">Requirements</h3>
+            </div>
+            <div class="stage-panel-actions">
+              <button type="button" class="btn secondary" id="btnLockStage">Lock this stage</button>
+              <button type="button" class="btn primary" id="btnRunStage">Run this stage with AI</button>
+            </div>
+          </div>
+
+          <div class="callout" id="yourTasks"></div>
+
+          <div class="two-col">
+            <div class="block">
+              <h4>What to upload / paste</h4>
+              <label class="field-label" for="stageNotes">Notes / requirements / answers</label>
+              <textarea id="stageNotes" rows="8" placeholder="Paste meeting notes, RSD text, clarifications, or answers to open questions…"></textarea>
+
+              <label class="field-label" for="fileInput">Upload files (docs, screenshots, .pbix, schema, etc.)</label>
+              <div class="dropzone" id="dropzone">
+                <input type="file" id="fileInput" multiple />
+                <p><strong>Click to upload</strong> or drag files here</p>
+                <p class="muted small">Files are stored in this browser. Very large .pbix files may be slow — prefer .pbip folders zipped, or paste schema text.</p>
+              </div>
+              <ul class="file-list" id="fileList"></ul>
+            </div>
+
+            <div class="block">
+              <h4>What you can download</h4>
+              <div id="downloadList" class="download-list"></div>
+              <h4 class="mt">Stage output</h4>
+              <div id="stageOutput" class="output-box muted">Run a stage or paste an output to see it here.</div>
+              <label class="field-label" for="pasteOutput">Or paste AI / Cursor output (JSON or markdown)</label>
+              <textarea id="pasteOutput" rows="5" placeholder='Paste handoff JSON or markdown, then click “Save pasted output”'></textarea>
+              <button type="button" class="btn secondary" id="btnSavePaste">Save pasted output</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <!-- NEW PROJECT MODAL -->
+  <dialog id="modalNew">
+    <form method="dialog" id="formNewProject" class="modal">
+      <h3>New project</h3>
+      <label class="field-label" for="newName">Project name</label>
+      <input id="newName" required placeholder="e.g. Supplier Performance" />
+      <label class="field-label" for="newType">Project type</label>
+      <select id="newType">
+        <option value="NEW">New project (needs proposal)</option>
+        <option value="ONGOING">Ongoing report change</option>
+      </select>
+      <label class="field-label" for="newScenario">Starting from</label>
+      <select id="newScenario">
+        <option value="rough idea">Rough idea</option>
+        <option value="RSD">RSD</option>
+        <option value="PRD">PRD</option>
+        <option value="ongoing report change">Ongoing report change</option>
+      </select>
+      <label class="field-label" for="newJump">Start at stage</label>
+      <select id="newJump">
+        <option value="1">1 — Requirements</option>
+        <option value="2">2 — Architecture</option>
+        <option value="3">3 — Data feasibility</option>
+        <option value="4">4 — Build guidance</option>
+        <option value="5">5 — QA</option>
+        <option value="6">6 — Documentation</option>
+      </select>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="btnCancelNew">Cancel</button>
+        <button type="submit" class="btn primary">Create project</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- SETTINGS MODAL -->
+  <dialog id="modalSettings">
+    <form method="dialog" class="modal" id="formSettings">
+      <h3>AI settings</h3>
+      <p class="muted">
+        Optional — same idea as Google AI Studio. Add a free
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Gemini API key</a>
+        so “Run this stage with AI” works inside this page.
+        Without a key, you can still upload/download and paste outputs from Cursor.
+      </p>
+      <label class="field-label" for="apiKey">Gemini API key</label>
+      <input id="apiKey" type="password" placeholder="AIza…" autocomplete="off" />
+      <label class="field-label" for="modelName">Model</label>
+      <select id="modelName">
+        <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+        <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+        <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+      </select>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" id="btnClearKey">Clear key</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script src="agents.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

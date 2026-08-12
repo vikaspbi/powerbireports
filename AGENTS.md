@@ -1,8 +1,13 @@
 # AGENTS.md — Power BI Delivery Kit
 
-This repository includes a reusable **Power BI Delivery Kit** for Cursor.
+This repository includes a reusable **Power BI Delivery Kit** for Cursor, plus a browser **Delivery Studio** UI for non-technical upload/download workflows.
 
-## Entry point
+## Easy entry (non-technical)
+
+- Open `studio/index.html` (or GitHub Pages `/studio/`)
+- Create a project → upload files → run/paste stage outputs → download ZIP
+
+## Cursor entry point
 
 - Skill: `/pbi-delivery` (`.cursor/skills/pbi-delivery/`)
 - Subagents: `.cursor/agents/pbi-*.md` (stages 1–6)
@@ -10,7 +15,7 @@ This repository includes a reusable **Power BI Delivery Kit** for Cursor.
 
 ## Orchestration habit
 
-1. Identify or create `projects/<project-name>/`.
+1. Identify or create `projects/<project-name>/` (or use Delivery Studio export ZIP).
 2. Run stages with human locks, **or** jump to stage N when upstream handoffs exist.
 3. Persist JSON/Markdown handoffs after every stabilization.
 4. Always show **Your tasks (now)** so the human knows what to do next.
