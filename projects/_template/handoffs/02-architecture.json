@@ -1,0 +1,12 @@
+{
+  "architecture_diagram": {
+    "format": "mermaid",
+    "content": ""
+  },
+  "wireframe_spec": [],
+  "meta": {
+    "project_name": "{{PROJECT_NAME}}",
+    "locked": false,
+    "source_requirements_file": "handoffs/01-requirements.json"
+  }
+}
