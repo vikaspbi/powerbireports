@@ -1,28 +1,29 @@
 # Power BI Delivery Studio
 
-A simple browser interface (like Google AI Studio / Base44-style upload–download workspace) for the Power BI Delivery Kit.
+A **live chat workspace** (Google AI Studio–style) for Power BI delivery: talk, upload, download — no API keys.
 
 ## Open it
 
-- Local / GitHub Pages: open [`studio/index.html`](../studio/index.html) or `https://vikaspbi.github.io/powerbireports/studio/`
-- From the portfolio site: use the **Delivery Studio** button in the header
+- `studio/index.html` or `https://vikaspbi.github.io/powerbireports/studio/`
+- Portfolio header → **Delivery Studio**
 
-## What you can do (no coding)
+## How it works
 
-1. **New project** — name it, choose NEW/ONGOING, optionally jump to stage N  
-2. **Upload** — notes, RSD, screenshots, schema, `.pbix` / zipped `.pbip`  
-3. **Run this stage with AI** — optional Gemini API key (from [Google AI Studio](https://aistudio.google.com/apikey))  
-4. **Or paste** output from Cursor if you prefer  
-5. **Download** stage JSON/Markdown or the full **project ZIP**  
-6. **Lock stage** when happy, then move on  
+1. **New project** opens a chat for that engagement  
+2. **Type and upload** requirements, schema, screenshots, report files  
+3. **Copy prompt for Cursor** → paste into Cursor Agent (that’s the live AI)  
+4. **Paste Cursor’s reply** back into Studio chat → saved as a downloadable stage output  
+5. Say **lock** (or click Lock stage) → move to the next stage  
+6. **Download** stage files or the full project ZIP anytime  
 
-## Important notes
+There is **no Gemini / “Run with AI” button** in Studio. Cursor is the brain; Studio is the chat + files + downloads desk.
 
-- Data is stored **in your browser** (localStorage + IndexedDB) until you download a ZIP backup  
-- Clearing browser data deletes projects unless you exported a ZIP  
-- Large `.pbix` files may be slow; prefer schema text or a zipped `.pbip` for AI stages  
-- Without an API key, upload/download/paste still work — AI run needs Gemini  
+## Commands in chat
+
+- `lock` — lock current stage  
+- `next` — go to next stage  
+- `stage 3` — jump to stage 3  
 
 ## Privacy
 
-Your Gemini API key is saved only in this browser’s local storage and is sent only to Google’s Gemini API when you click **Run this stage with AI**.
+Projects stay in your browser (localStorage + IndexedDB) until you export a ZIP.

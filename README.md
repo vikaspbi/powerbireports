@@ -55,6 +55,6 @@ Explore all projects: [Projects Website](https://vikaspbi.github.io/powerbirepor
 
 Reusable end-to-end Power BI delivery workflow (requirements → docs).
 
-- **Easy UI (recommended):** open [Delivery Studio](studio/index.html) — upload / download / run stages in the browser
+- **Easy UI (recommended):** open [Delivery Studio](studio/index.html) — live chat, upload, download (Cursor does the AI)
 - Kit docs: [docs/pbi-delivery-kit/README.md](docs/pbi-delivery-kit/README.md)
-- In Cursor (advanced): run `/pbi-delivery`
+- In Cursor: run `/pbi-delivery`

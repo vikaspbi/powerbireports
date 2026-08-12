@@ -23,98 +23,89 @@
       </div>
     </div>
     <div class="top-actions">
-      <button type="button" class="btn ghost" id="btnSettings">AI settings</button>
       <button type="button" class="btn secondary" id="btnExportZip" disabled>Download project ZIP</button>
       <button type="button" class="btn primary" id="btnNewProject">New project</button>
     </div>
   </header>
 
   <main class="shell">
-    <!-- HOME -->
     <section id="viewHome" class="view">
       <div class="hero-panel">
-        <h2>Upload in. Download out.</h2>
+        <h2>Chat live. Upload. Download.</h2>
         <p>
-          A simple workspace for your Power BI delivery stages — no terminal, no folder hunting.
-          Create a project, upload requirements or report files, run each stage, and download the results.
+          Work like Google AI Studio: talk through your Power BI project in one chat,
+          attach files as you go, and download every output — without terminals or API keys.
         </p>
         <div class="hero-steps">
-          <div><span>1</span> Create project</div>
-          <div><span>2</span> Upload files / notes</div>
-          <div><span>3</span> Run stages 1–6</div>
-          <div><span>4</span> Download outputs</div>
+          <div><span>1</span> Start a project chat</div>
+          <div><span>2</span> Upload / type what you have</div>
+          <div><span>3</span> Continue in Cursor (live AI)</div>
+          <div><span>4</span> Paste results · download</div>
         </div>
       </div>
-
       <div class="section-head">
         <h3>Your projects</h3>
-        <p class="muted">Everything stays in this browser until you download a ZIP backup.</p>
+        <p class="muted">Chats and files stay in this browser until you download a ZIP.</p>
       </div>
       <div id="projectList" class="project-grid"></div>
     </section>
 
-    <!-- WORKSPACE -->
     <section id="viewWorkspace" class="view hidden">
-      <div class="workspace-head">
-        <button type="button" class="btn ghost" id="btnBackHome">← All projects</button>
-        <div>
-          <h2 id="wsProjectName">Project</h2>
-          <p class="muted" id="wsProjectMeta"></p>
-        </div>
-        <button type="button" class="btn danger ghost" id="btnDeleteProject">Delete project</button>
-      </div>
+      <div class="chat-layout">
+        <aside class="side-panel">
+          <button type="button" class="btn ghost wide" id="btnBackHome">← All projects</button>
+          <div class="side-block">
+            <h2 id="wsProjectName">Project</h2>
+            <p class="muted small" id="wsProjectMeta"></p>
+          </div>
+          <div class="side-block">
+            <h3>Stages</h3>
+            <div id="stageRail" class="stage-rail"></div>
+          </div>
+          <div class="side-block">
+            <h3>Downloads</h3>
+            <div id="downloadList" class="download-list"></div>
+          </div>
+          <button type="button" class="btn danger ghost wide" id="btnDeleteProject">Delete project</button>
+        </aside>
 
-      <div class="workspace-grid">
-        <aside class="stage-rail" id="stageRail"></aside>
-
-        <section class="stage-panel">
-          <div class="stage-panel-head">
+        <section class="chat-panel">
+          <div class="chat-toolbar">
             <div>
-              <p class="eyebrow" id="stageEyebrow">Stage</p>
-              <h3 id="stageTitle">Requirements</h3>
+              <p class="eyebrow" id="stageEyebrow">Stage 1</p>
+              <h3 id="stageTitle">Requirements & Proposal</h3>
             </div>
-            <div class="stage-panel-actions">
-              <button type="button" class="btn secondary" id="btnLockStage">Lock this stage</button>
-              <button type="button" class="btn primary" id="btnRunStage">Run this stage with AI</button>
+            <div class="chat-toolbar-actions">
+              <button type="button" class="btn secondary" id="btnCopyCursor">Copy prompt for Cursor</button>
+              <button type="button" class="btn secondary" id="btnLockStage">Lock stage</button>
             </div>
           </div>
 
-          <div class="callout" id="yourTasks"></div>
+          <div id="chatLog" class="chat-log" aria-live="polite"></div>
 
-          <div class="two-col">
-            <div class="block">
-              <h4>What to upload / paste</h4>
-              <label class="field-label" for="stageNotes">Notes / requirements / answers</label>
-              <textarea id="stageNotes" rows="8" placeholder="Paste meeting notes, RSD text, clarifications, or answers to open questions…"></textarea>
-
-              <label class="field-label" for="fileInput">Upload files (docs, screenshots, .pbix, schema, etc.)</label>
-              <div class="dropzone" id="dropzone">
-                <input type="file" id="fileInput" multiple />
-                <p><strong>Click to upload</strong> or drag files here</p>
-                <p class="muted small">Files are stored in this browser. Very large .pbix files may be slow — prefer .pbip folders zipped, or paste schema text.</p>
-              </div>
-              <ul class="file-list" id="fileList"></ul>
+          <div class="composer">
+            <div id="pendingFiles" class="pending-files"></div>
+            <div class="composer-row">
+              <label class="attach-btn" title="Upload files">
+                +
+                <input type="file" id="fileInput" multiple hidden />
+              </label>
+              <textarea id="composerInput" rows="2" placeholder="Type like a normal chat… paste requirements, answers, or Cursor output here"></textarea>
+              <button type="button" class="btn primary" id="btnSend">Send</button>
             </div>
-
-            <div class="block">
-              <h4>What you can download</h4>
-              <div id="downloadList" class="download-list"></div>
-              <h4 class="mt">Stage output</h4>
-              <div id="stageOutput" class="output-box muted">Run a stage or paste an output to see it here.</div>
-              <label class="field-label" for="pasteOutput">Or paste AI / Cursor output (JSON or markdown)</label>
-              <textarea id="pasteOutput" rows="5" placeholder='Paste handoff JSON or markdown, then click “Save pasted output”'></textarea>
-              <button type="button" class="btn secondary" id="btnSavePaste">Save pasted output</button>
-            </div>
+            <p class="composer-hint muted small">
+              Tip: paste Cursor’s JSON/markdown reply here and send — Studio will save it as a downloadable stage output.
+              Commands: <code>lock</code> · <code>next</code> · <code>stage 3</code>
+            </p>
           </div>
         </section>
       </div>
     </section>
   </main>
 
-  <!-- NEW PROJECT MODAL -->
   <dialog id="modalNew">
     <form method="dialog" id="formNewProject" class="modal">
-      <h3>New project</h3>
+      <h3>New project chat</h3>
       <label class="field-label" for="newName">Project name</label>
       <input id="newName" required placeholder="e.g. Supplier Performance" />
       <label class="field-label" for="newType">Project type</label>
@@ -140,32 +131,7 @@
       </select>
       <div class="modal-actions">
         <button type="button" class="btn ghost" id="btnCancelNew">Cancel</button>
-        <button type="submit" class="btn primary">Create project</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- SETTINGS MODAL -->
-  <dialog id="modalSettings">
-    <form method="dialog" class="modal" id="formSettings">
-      <h3>AI settings</h3>
-      <p class="muted">
-        Optional — same idea as Google AI Studio. Add a free
-        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Gemini API key</a>
-        so “Run this stage with AI” works inside this page.
-        Without a key, you can still upload/download and paste outputs from Cursor.
-      </p>
-      <label class="field-label" for="apiKey">Gemini API key</label>
-      <input id="apiKey" type="password" placeholder="AIza…" autocomplete="off" />
-      <label class="field-label" for="modelName">Model</label>
-      <select id="modelName">
-        <option value="gemini-2.0-flash">gemini-2.0-flash</option>
-        <option value="gemini-2.5-flash">gemini-2.5-flash</option>
-        <option value="gemini-1.5-flash">gemini-1.5-flash</option>
-      </select>
-      <div class="modal-actions">
-        <button type="button" class="btn ghost" id="btnClearKey">Clear key</button>
-        <button type="submit" class="btn primary">Save</button>
+        <button type="submit" class="btn primary">Start chat</button>
       </div>
     </form>
   </dialog>

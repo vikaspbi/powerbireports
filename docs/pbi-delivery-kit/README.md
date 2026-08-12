@@ -22,13 +22,13 @@ Reusable Cursor kit that runs a Power BI engagement from requirements through do
 
 ## How to use (non-technical — recommended)
 
-Open **[Delivery Studio](../../studio/index.html)** in the browser:
+Open **[Delivery Studio](../../studio/index.html)** — a live chat workspace (upload / talk / download):
 
-1. Click **New project**
-2. Upload requirements / report files
-3. Run each stage (optional Gemini API key) or paste Cursor outputs
-4. Download stage files or the full project ZIP
-5. Lock a stage when you are happy, then continue
+1. Click **New project** to start a chat
+2. Type notes and upload files in the chat
+3. Click **Copy prompt for Cursor** and paste into Cursor Agent (live AI happens there)
+4. Paste Cursor’s reply back into Studio to save & download
+5. Say `lock` when happy, then continue stages
 
 Details: [`studio/README.md`](../../studio/README.md)
 
